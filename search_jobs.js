@@ -20,6 +20,7 @@ function print_help() {
 }
 
 function args_handler() {
+    // TODO: check the given data types for arguments
     let location, radius, keyword, api_key = default_api_key;
     for(let i = 2; i < process.argv.length; i += 2) {
         if (process.argv[i] === "-l") {
@@ -28,7 +29,7 @@ function args_handler() {
             radius = process.argv[i + 1];
         } else if (process.argv[i] === "-k") {
             keyword = encodeURIComponent(process.argv[i + 1]);
-        } else if (process.argv[i] === "---api-key") {
+        } else if (process.argv[i] === "--api-key") {
             api_key = process.argv[i + 1];
         } else if(process.argv[i] === "-h") {
             print_help();
@@ -40,9 +41,9 @@ function args_handler() {
         }
     }
     // start the program if the given args are correct
-    get_company_ids(api_key, location, radius, keyword).then((company_urls) => {
-        console.log(company_urls);
-        console.log("Total companies found: " + company_urls.length);
+    get_company_ids(api_key, location, radius, keyword).then((company_infos) => {
+        console.log(company_infos);
+        console.log("Total companies found: " + company_infos.length);
     });
 }
 

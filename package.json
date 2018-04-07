@@ -5,7 +5,7 @@
   "main": "search_jobs.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node search_jobs.js"
+    "start": "node search_jobs.js -l 41.013725,28.9187643 -k yazılım -r 8000"
   },
   "author": "yavuzovski",
   "license": "MIT",
