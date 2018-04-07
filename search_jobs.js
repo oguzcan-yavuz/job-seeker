@@ -38,42 +38,44 @@ function timeout(ms) {
 }
 
 async function get_company_ids(api_key, location, radius, keyword) {
-    let company_infos = [];
-    let page_token = "";
-    let counter = 1;
-    while(page_token !== undefined) {
-        let options = {
-            uri: "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
-            qs: {
-                location: location,
-                radius: radius,
-                keyword: keyword,
-                key: api_key,
-                pagetoken: page_token
-            },
-            resolveWithFullResponse: true
-        };
-        await rp(options)
-            .then(function(response) {
-                response = JSON.parse(response.body);
-                if(!response)
-                    return Promise.reject(new Error('fail')).catch(() => console.err);
-                console.log("Fetching " + get_ordinal(counter++) + " page.");
-                let results = response.results;
-                for(let i in results) {
-                    if(results.hasOwnProperty(i)) {
-                        get_company_infos(results[i].place_id, api_key).then((result) => {
-                            if(result.website !== undefined)     // check if the website link exist
-                                company_infos.push(result);
-                        });
+    return new Promise(async function(resolve) {
+        let company_infos = [];
+        let page_token = "";
+        let counter = 1;
+        while(page_token !== undefined) {
+            let options = {
+                uri: "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
+                qs: {
+                    location: location,
+                    radius: radius,
+                    keyword: keyword,
+                    key: api_key,
+                    pagetoken: page_token
+                },
+                resolveWithFullResponse: true
+            };
+            await rp(options)
+                .then(function(response) {
+                    response = JSON.parse(response.body);
+                    if(!response)
+                        return Promise.reject(new Error('fail')).catch(() => console.err);
+                    console.log("Fetching " + get_ordinal(counter++) + " page.");
+                    let results = response.results;
+                    for(let i in results) {
+                        if(results.hasOwnProperty(i)) {
+                            get_company_infos(results[i].place_id, api_key).then((result) => {
+                                if(result.website !== undefined)     // check if the website link exist
+                                    company_infos.push(result);
+                            });
+                        }
                     }
-                }
-                page_token = response.next_page_token;
-            })
-            .catch(console.error);
-        await timeout(2000);
-    }
-    return company_infos;
+                    page_token = response.next_page_token;
+                })
+                .catch(console.error);
+            await timeout(2000);
+        }
+        return resolve(company_infos);
+    });
 }
 
 async function get_company_infos(company_id, api_key) {
