@@ -1,0 +1,16 @@
+{
+  "name": "job-seeker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "search_jobs.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node search_jobs.js"
+  },
+  "author": "yavuzovski",
+  "license": "MIT",
+  "dependencies": {
+    "request": "^2.85.0",
+    "request-promise-native": "^1.0.5"
+  }
+}
