@@ -1,5 +1,20 @@
 const rp = require('request-promise-native');
 const default_api_key = "AIzaSyCeaN9xCVnbdfAl6ZGAEu6g8n1mwW2aMMw";
+const argv = require('yargs')
+    .usage("Usage: node $0 [options]")
+    .example("node $0 -l 41.013725,28.9187643 -r 8000 -k software")
+    .alias('l', 'location')
+    .describe('l', 'Latitude and longitude of a location')
+    .alias('r', 'radius')
+    .describe('r', 'Search radius of the given location in meters')
+    .alias('k', 'keyword')
+    .describe('k', 'keyword to use for search at google places api')
+    .alias('api', 'api-key')
+    .describe('api', 'use another api key than default api key')
+    .demandOption(["l", "r", "k"])
+    .help('h')
+    .alias('h', 'help')
+    .argv;
 
 function get_ordinal(n) {
    let s = ["th", "st", "nd", "rd"],
@@ -7,39 +22,10 @@ function get_ordinal(n) {
    return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-function print_help() {
-    console.log(
-        "Parameters: " +
-        "\n\t-h: print this help menu" +
-        "\n\t-l: location in latitude,longitude format" +
-        "\n\t-r: radius in meters" +
-        "\n\t-k: keyword to use for search at google places api" +
-        "\n\t--api-key: (OPTIONAL) use another api key than default api key" +
-        "\nExample usage: node search_jobs.js -l 41.013725,28.9187643 -r 8000 -k software"
-    );
-}
-
 function args_handler() {
-    // TODO: check the given data types for arguments
-    let location, radius, keyword, api_key = default_api_key;
-    for(let i = 2; i < process.argv.length; i += 2) {
-        if (process.argv[i] === "-l") {
-            location = process.argv[i + 1];
-        } else if (process.argv[i] === "-r") {
-            radius = process.argv[i + 1];
-        } else if (process.argv[i] === "-k") {
-            keyword = process.argv[i + 1];
-        } else if (process.argv[i] === "--api-key") {
-            api_key = process.argv[i + 1];
-        } else if(process.argv[i] === "-h") {
-            print_help();
-            return;
-        } else {
-            console.log("Invalid usage.\n");
-            print_help();
-            return;
-        }
-    }
+    let location = argv.l, radius = argv.r, keyword = argv.k, api_key = default_api_key;
+    if(argv.api)
+        api_key = argv.api;
     // start the program if the given args are correct
     get_company_ids(api_key, location, radius, keyword).then((company_infos) => {
         console.log(company_infos);
