@@ -87,12 +87,12 @@ async function get_company_infos(company_id, api_key) {
     };
     return rp(options)
         .then((response) => {
+            response = JSON.parse(response.body);
             if(!response)
                 return Promise.reject(new Error('fail')).catch(() => console.err);
             let company_details = [];
             let keys = ["name", "map", "website"];
             let result = {};
-            response = JSON.parse(response.body);
             company_details.push(response.result.name);
             company_details.push(response.result.url);
             company_details.push(response.result.website);
