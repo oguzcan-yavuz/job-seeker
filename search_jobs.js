@@ -28,7 +28,7 @@ function args_handler() {
         } else if (process.argv[i] === "-r") {
             radius = process.argv[i + 1];
         } else if (process.argv[i] === "-k") {
-            keyword = encodeURIComponent(process.argv[i + 1]);
+            keyword = process.argv[i + 1];
         } else if (process.argv[i] === "--api-key") {
             api_key = process.argv[i + 1];
         } else if(process.argv[i] === "-h") {
@@ -56,10 +56,15 @@ async function get_company_ids(api_key, location, radius, keyword) {
     let page_token = "";
     let counter = 1;
     while(page_token !== undefined) {
-        let query_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="
-            + location + "&radius=" + radius + "&keyword=" + keyword + "&key=" + api_key + "&pagetoken=" + page_token;
         let options = {
-            uri: query_url,
+            uri: "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
+            qs: {
+                location: location,
+                radius: radius,
+                keyword: keyword,
+                key: api_key,
+                pagetoken: page_token
+            },
             resolveWithFullResponse: true
         };
         await rp(options)
@@ -86,10 +91,12 @@ async function get_company_ids(api_key, location, radius, keyword) {
 }
 
 async function get_company_infos(company_id, api_key) {
-    let query_url = "https://maps.googleapis.com/maps/api/place/details/json?placeid="
-        + company_id + "&key=" + api_key;
     const options = {
-        uri: query_url,
+        uri: "https://maps.googleapis.com/maps/api/place/details/json",
+        qs: {
+            placeid: company_id,
+            key: api_key
+        },
         resolveWithFullResponse: true
     };
     return rp(options)
