@@ -66,7 +66,7 @@ async function get_company_ids(api_key, location, radius, keyword) {
                 for(let i in results) {
                     if(results.hasOwnProperty(i)) {
                         get_company_urls(results[i].place_id, api_key).then((result) => {
-                            if(result[2] !== undefined)     // website
+                            if(result.website !== undefined)     // check if the website link exist
                                 company_urls.push(result);
                         });
                     }
@@ -85,11 +85,15 @@ async function get_company_urls(company_id, api_key) {
     return rp({ uri: query_url, resolveWithFullResponse: true })
         .then((response) => {
             let company_details = [];
+            let keys = ["name", "map", "website"];
+            let result = {};
             response = JSON.parse(response.body);
             company_details.push(response.result.name);
             company_details.push(response.result.url);
             company_details.push(response.result.website);
-            return company_details;
+            for(let i = 0; i < keys.length; i++)
+                result[keys[i]] = company_details[i];
+            return result;
         })
         .catch(console.error);
 }
