@@ -52,44 +52,58 @@ function timeout(ms) {
 }
 
 async function get_company_ids(api_key, location, radius, keyword) {
-    let company_urls = [];
+    let company_infos = [];
     let page_token = "";
     let counter = 1;
     while(page_token !== undefined) {
         let query_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="
             + location + "&radius=" + radius + "&keyword=" + keyword + "&key=" + api_key + "&pagetoken=" + page_token;
-        await rp({ uri: query_url, resolveWithFullResponse: true })
+        let options = {
+            uri: query_url,
+            resolveWithFullResponse: true,
+            json: true
+        };
+        await rp(options)
             .then(function(response) {
+                if(!response)
+                    return Promise.reject(new Error('fail')).catch(() => console.err);
                 console.log("Fetching " + get_ordinal(counter++) + " page.");
-                response = JSON.parse(response.body);
-                let results = response.results;
+                let results = response.body.results;
                 for(let i in results) {
                     if(results.hasOwnProperty(i)) {
-                        get_company_urls(results[i].place_id, api_key).then((result) => {
-                            if(result[2] !== undefined)     // website
-                                company_urls.push(result);
+                        get_company_infos(results[i].place_id, api_key).then((result) => {
+                            company_infos.push(result);
                         });
                     }
                 }
-                page_token = response.next_page_token;
+                page_token = response.body.next_page_token;
             })
             .catch(console.error);
         await timeout(2000);
     }
-    return company_urls;
+    return company_infos;
 }
 
-async function get_company_urls(company_id, api_key) {
+async function get_company_infos(company_id, api_key) {
     let query_url = "https://maps.googleapis.com/maps/api/place/details/json?placeid="
         + company_id + "&key=" + api_key;
-    return rp({ uri: query_url, resolveWithFullResponse: true })
+    const options = {
+        uri: query_url,
+        resolveWithFullResponse: true
+    };
+    return rp(options)
         .then((response) => {
+            if(!response)
+                return Promise.reject(new Error('fail')).catch(() => console.err);
             let company_details = [];
-            response = JSON.parse(response.body);
+            let keys = ["name", "map", "website"];
             company_details.push(response.result.name);
             company_details.push(response.result.url);
             company_details.push(response.result.website);
-            return company_details;
+            let result = {};
+            for(let i = 0; i < keys.length; i++)
+                result.keys[i] = company_details[i];
+            return result;
         })
         .catch(console.error);
 }
