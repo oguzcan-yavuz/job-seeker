@@ -73,7 +73,7 @@ async function get_company_ids(api_key, location, radius, keyword) {
                 }
                 page_token = response.next_page_token;
             })
-            .catch(console.log);
+            .catch(console.error);
         await timeout(2000);
     }
     return company_urls;
@@ -82,16 +82,16 @@ async function get_company_ids(api_key, location, radius, keyword) {
 async function get_company_urls(company_id, api_key) {
     let query_url = "https://maps.googleapis.com/maps/api/place/details/json?placeid="
         + company_id + "&key=" + api_key;
-    let company_details = [];
-    await rp({ uri: query_url, resolveWithFullResponse: true })
+    return rp({ uri: query_url, resolveWithFullResponse: true })
         .then((response) => {
+            let company_details = [];
             response = JSON.parse(response.body);
             company_details.push(response.result.name);
             company_details.push(response.result.url);
             company_details.push(response.result.website);
+            return company_details;
         })
-        .catch(console.log);
-    return company_details;
+        .catch(console.error);
 }
 
 args_handler();
