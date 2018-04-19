@@ -21,22 +21,12 @@ function get_ordinal(n) {
    return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-function args_handler() {
-    const default_api_key = "AIzaSyCeaN9xCVnbdfAl6ZGAEu6g8n1mwW2aMMw";
-    let location = argv.l, radius = argv.r, keyword = argv.k, api_key = default_api_key;
-    if(argv.api)
-        api_key = argv.api;
-    // start the program if the given args are correct
-    // TODO: main'deki uyariyi coz. kodu daha modueler hale getir.
-    main(api_key, location, radius, keyword).catch(console.error);
-}
-
 function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function get_company_ids(api_key, location, radius, keyword, page_token, counter) {
-    return new Promise(async function(resolve) {
+    return new Promise(async function(resolve, reject) {
         let company_infos = {
             results: [],
             page_token: undefined
@@ -52,15 +42,15 @@ async function get_company_ids(api_key, location, radius, keyword, page_token, c
             },
             resolveWithFullResponse: true
         };
-        await rp(options)
-            .then(function(response) {
-                response = JSON.parse(response.body);
-                if(!response)
-                    return Promise.reject(new Error('fail')).catch(() => console.err);
-                handle_company_ids(company_infos, response, api_key, counter);
-            });
-        await timeout(2000);
-        return resolve(company_infos);
+        let response = await rp(options);
+        response = JSON.parse(response.body);
+        if(!response)
+            return reject(new Error('fail'));
+        else {
+            handle_company_ids(company_infos, response, api_key, counter);
+            await timeout(2000);
+            return resolve(company_infos);
+        }
     });
 }
 
@@ -69,7 +59,7 @@ function handle_company_ids(company_infos, response, api_key, counter) {
     let results = response.results;
     for(let i in results) {
         if(results.hasOwnProperty(i)) {
-            get_company_infos(results[i].place_id, api_key).then((result) => {
+            get_company_details(results[i].place_id, api_key).then((result) => {
                 if(result.website !== undefined)     // check if the website link exist
                     company_infos.results.push(result);
             });
@@ -78,7 +68,7 @@ function handle_company_ids(company_infos, response, api_key, counter) {
     company_infos.page_token = response.next_page_token;
 }
 
-function get_company_infos(company_id, api_key) {
+function get_company_details(company_id, api_key) {
     const options = {
         uri: "https://maps.googleapis.com/maps/api/place/details/json",
         qs: {
@@ -92,7 +82,8 @@ function get_company_infos(company_id, api_key) {
             response = JSON.parse(response.body);
             if(!response)
                 return Promise.reject(new Error('fail')).catch(() => console.err);
-            return Promise.resolve(handle_details(response));
+            else
+                return Promise.resolve(handle_details(response));
         })
 }
 
@@ -109,14 +100,22 @@ async function main(api_key, location, radius, keyword) {
     let company_counter = 0;
     let counter = 1;
     while(page_token !== undefined) {
-        await get_company_ids(api_key, location, radius, keyword, page_token, counter).then((company_infos) => {
-            console.log(company_infos.results);
-            page_token = company_infos.page_token;
-            company_counter += company_infos.results.length;
-            counter++;
-        }).catch(console.error);
+        let company_infos = await get_company_ids(api_key, location, radius, keyword, page_token, counter);
+        console.log(company_infos.results);
+        page_token = company_infos.page_token;
+        company_counter += company_infos.results.length;
+        counter++;
     }
     console.log("Total companies found: " + company_counter);
+}
+
+function args_handler() {
+    const default_api_key = "AIzaSyCeaN9xCVnbdfAl6ZGAEu6g8n1mwW2aMMw";
+    let location = argv.l, radius = argv.r, keyword = argv.k, api_key = default_api_key;
+    if(argv.api)
+        api_key = argv.api;
+    // start the program if the given args are correct
+    main(api_key, location, radius, keyword).catch(console.error);
 }
 
 args_handler();
