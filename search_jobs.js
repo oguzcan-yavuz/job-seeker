@@ -5,7 +5,7 @@ const argv = require('yargs')
     .alias('l', 'location')
     .describe('l', 'Latitude and longitude of a location')
     .alias('r', 'radius')
-    .describe('r', 'Search radius of the given location in meters')
+    .describe('r', 'Search radius of the given location in meters.')
     .alias('k', 'keyword')
     .describe('k', 'keyword to use for search at google places api')
     .alias('api', 'api-key')
@@ -95,10 +95,10 @@ function handle_details(response) {
     };
 }
 
-async function main(api_key, location, radius, keyword) {
-    let page_token = "";
-    let company_counter = 0;
-    let counter = 1;
+async function main() {
+    let args = args_handler();
+    let api_key = args.api, radius = args.r, location = args.l, keyword = args.k
+    let page_token = "", company_counter = 0, counter = 1;
     while(page_token !== undefined) {
         let company_infos = await get_company_ids(api_key, location, radius, keyword, page_token, counter);
         console.log(company_infos.results);
@@ -111,11 +111,12 @@ async function main(api_key, location, radius, keyword) {
 
 function args_handler() {
     const default_api_key = "AIzaSyCeaN9xCVnbdfAl6ZGAEu6g8n1mwW2aMMw";
-    let location = argv.l, radius = argv.r, keyword = argv.k, api_key = default_api_key;
-    if(argv.api)
-        api_key = argv.api;
-    // start the program if the given args are correct
-    main(api_key, location, radius, keyword).catch(console.error);
+    return {
+        api: (argv.api) ? argv.api : default_api_key,
+        r: argv.r,
+        l: argv.l,
+        k: argv.k
+    }
 }
 
-args_handler();
+main();
