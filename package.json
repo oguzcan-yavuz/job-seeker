@@ -10,6 +10,7 @@
   "author": "yavuzovski",
   "license": "MIT",
   "dependencies": {
+    "hoek": "^5.0.3",
     "request": "^2.85.0",
     "request-promise-native": "^1.0.5",
     "yargs": "^11.0.0"
