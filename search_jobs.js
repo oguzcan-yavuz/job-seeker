@@ -119,4 +119,4 @@ function args_handler() {
     }
 }
 
-main();
+main().catch(console.error);
