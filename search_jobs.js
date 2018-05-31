@@ -1,7 +1,7 @@
 const rp = require('request-promise-native');
 const argv = require('yargs')
     .usage("Usage: node $0 [options]")
-    .example("node $0 -l 41.013725,28.9187643 -r 8000 -k software")
+    .example("node $0 -l 37.773972,-122.431297 -r 8000 -k software")
     .alias('l', 'location')
     .describe('l', 'Latitude and longitude of a location')
     .alias('r', 'radius')
